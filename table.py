@@ -10,11 +10,10 @@ class Table:
     def get_connector(self):
         return self.cnx, self.cursor
 
-    @staticmethod
-    def get_table_connect(creds: tuple):
-        cnx = mysql.connector.connect(user=creds[0], password=creds[1], host=creds[2], database=creds[3])
-        cursor = cnx.cursor(buffered=True)
-        return cnx, cursor
+    def get_table_connect(self, creds: tuple):
+        self.cnx = mysql.connector.connect(user=creds[0], password=creds[1], host=creds[2], database=creds[3])
+        self.cursor = self.cnx.cursor(buffered=True)
+        return self.cnx, self.cursor
 
     def table_execute(self, query):
         self.cursor.execute(query)
