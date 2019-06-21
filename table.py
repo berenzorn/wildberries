@@ -34,6 +34,30 @@ class Table:
         self.cursor.close()
         self.cnx.close()
 
+    def proxy_make(self):
+        create = f"CREATE TABLE proxy_list (id INT NOT NULL AUTO_INCREMENT," \
+                 f" protocol VARCHAR(32), address VARCHAR(64), PRIMARY KEY (id));"
+        self.table_execute(create)
+
+    def proxy_check(self):
+        try:
+            execute = f"SELECT * FROM proxy_list;"
+            self.table_execute(execute)
+        except mysql.connector.errors.ProgrammingError:
+            self.proxy_make()
+
+    def proxy_truncate(self):
+        truncate = f"TRUNCATE TABLE proxy_list;"
+        self.table_execute(truncate)
+
+    def proxy_append(self, proto, addr):
+        insert = f"INSERT INTO proxy_list (protocol, address) VALUES ({proto}, {addr});"
+        self.table_execute(insert)
+
+    def proxy_read(self, number):
+        read = f"SELECT * FROM proxy_list WHERE id = {number};"
+        self.table_execute(read)
+
     def table_make(self):
         create = f"CREATE TABLE {self.name} (id INT NOT NULL AUTO_INCREMENT, article INT, name VARCHAR(128)," \
             f" image VARCHAR(256), url VARCHAR(256), material VARCHAR(128), price INT,  price_sale INT," \
@@ -45,4 +69,14 @@ class Table:
             f"sold, timestamp) VALUES ('{bag.article}', '{bag.name}', '{bag.image}', '{bag.url}', '{bag.material}', " \
             f"'{bag.price}', '{bag.price_sale}', '{bag.rating}', '{bag.reviews}', '{bag.sold}', '{int(time.time())}');"
         self.table_execute(insert)
+
+    def table_check_presence(self, article):
+        select_article = f"SELECT timestamp FROM {self.name} WHERE article = {article};"
+        self.cursor.execute(select_article)
+        article_list = self.cursor.fetchall()
+        time_now = int(time.time())
+        for stamp in article_list:
+            if time_now - stamp[0] < 86400:
+                return True
+        return False
 
