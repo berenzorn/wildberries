@@ -1,54 +1,41 @@
 import random
-import time
-import table
+from table import Table
 import requests
-from crawler import cred_tuple
+import crawler
 
 
 class Proxy:
 
-    def __init__(self, proto, addr):
+    def __init__(self, proto, url):
         self.proto = proto
-        self.addr = addr
+        self.url = url
 
-    @staticmethod
-    def proxy_download(url):
+    def proxy_download(self):
         try:
-            result = requests.get(str.rstrip(url))
+            result = requests.get(str.rstrip(self.url))
             result.raise_for_status()
             return result.text
         except requests.RequestException:
             return False
 
     def form_table(self, clear):
-        t = table.Table('proxy_list', cred_tuple)
-        t.proxy_check()
+        t = Table('proxy_list', crawler.read_config())
+        t.table_check()
         if clear:
-            t.proxy_truncate()
+            t.table_truncate()
 
-        httplist = self.proxy_download(self.addr).split('\n')
-        if httplist:
-            tablelist = [f'{proto}://{i}' for i in httplist]
-            httplist.clear()
-            for i in tablelist:
-                t.proxy_append(proto, i)
-            return len(tablelist)
+        http_list = self.proxy_download().split('\r')
+        if http_list:
+            table_list = [f'{self.proto}://{str.lstrip(i)}' for i in http_list]
+            table_list.pop()
+            http_list.clear()
+            for i in table_list:
+                t.proxy_append(self.proto, i)
+            return len(table_list)
         return False
 
-    def read_table_string(self, list_len):
-        tbl = table.Table('proxy_list', cred_tuple)
+    @staticmethod
+    def read_table_string(list_len):
+        tbl = Table('proxy_list', crawler.read_config())
         number = int(random.random() * list_len)
-        return tbl.proxy_read(number)
-
-
-# if __name__ == '__main__':
-#     url = 'http://hidemyna.me/ru/api/proxylist.php?code=940706186043098&maxtime=1000&type=h&out=plain'
-#     urls = 'http://hidemyna.me/ru/api/proxylist.php?code=940706186043098&maxtime=1000&type=s&out=plain'
-#     clear_table = True
-#
-#     len_table = form_table('http', url, clear_table)
-#     delay = input("Download 2nd list? Delay 60 sec. (y/n): ")
-#     if delay in 'Yy':
-#         clear_table = False
-#         time.sleep(60)
-#         len_table = form_table('https', urls, clear_table)
+        return tbl.table_read(number)

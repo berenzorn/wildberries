@@ -22,8 +22,10 @@ class Table:
         try:
             execute = f"SELECT * FROM {self.name};"
             self.table_execute(execute)
+            return True
         except mysql.connector.errors.ProgrammingError:
-            self.table_make()
+            # self.table_make()
+            return False
 
     def table_execute(self, query):
         self.cursor.execute(query)
@@ -39,24 +41,23 @@ class Table:
                  f" protocol VARCHAR(32), address VARCHAR(64), PRIMARY KEY (id));"
         self.table_execute(create)
 
-    def proxy_check(self):
-        try:
-            execute = f"SELECT * FROM proxy_list;"
-            self.table_execute(execute)
-        except mysql.connector.errors.ProgrammingError:
-            self.proxy_make()
-
-    def proxy_truncate(self):
-        truncate = f"TRUNCATE TABLE proxy_list;"
-        self.table_execute(truncate)
-
     def proxy_append(self, proto, addr):
-        insert = f"INSERT INTO proxy_list (protocol, address) VALUES ({proto}, {addr});"
+        insert = f"INSERT INTO proxy_list (protocol, address) VALUES ('{proto}', '{addr}');"
         self.table_execute(insert)
 
-    def proxy_read(self, number):
-        read = f"SELECT * FROM proxy_list WHERE id = {number};"
-        self.table_execute(read)
+    def table_read(self, number):
+        read = f"SELECT * FROM {self.name} WHERE id = {number};"
+        self.cursor.execute(read)
+        return self.cursor.fetchone()
+
+    def table_len(self):
+        length = f"SELECT COUNT(*) FROM {self.name}"
+        self.cursor.execute(length)
+        return self.cursor.fetchone()
+
+    def table_truncate(self):
+        truncate = f"TRUNCATE TABLE {self.name};"
+        self.table_execute(truncate)
 
     def table_make(self):
         create = f"CREATE TABLE {self.name} (id INT NOT NULL AUTO_INCREMENT, article INT, name VARCHAR(128)," \
@@ -79,4 +80,3 @@ class Table:
             if time_now - stamp[0] < 86400:
                 return True
         return False
-
