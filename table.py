@@ -24,7 +24,6 @@ class Table:
             self.table_execute(execute)
             return True
         except mysql.connector.errors.ProgrammingError:
-            # self.table_make()
             return False
 
     def table_execute(self, query):
@@ -80,3 +79,14 @@ class Table:
             if time_now - stamp[0] < 86400:
                 return True
         return False
+
+    def table_check_material(self):
+        select = f"SELECT id, article FROM {self.name} where material = '---';"
+        self.cursor.execute(select)
+        empty_list = self.cursor.fetchall()
+        return empty_list
+
+    def table_update_material(self, id, math):
+        update = f"UPDATE {self.name} SET material = '{math}' WHERE (id = {id});"
+        self.cursor.execute(update)
+

@@ -1,3 +1,4 @@
+import random
 import re
 import time
 import bag
@@ -118,7 +119,9 @@ if __name__ == '__main__':
         main_soup = BeautifulSoup(main_html, 'html.parser')
         items = main_soup.find('span', class_="total many").find('span').text
         print(f"{items} товаров")
-        pages = int(int(items) / 100 + 1)
+        pages = int(int(items) / 100)
+        if int(items) % 100 != 0:
+            pages += 1
         if pages > 200:
             pages = 200
         print(f"{str(pages)} страниц")
@@ -126,5 +129,22 @@ if __name__ == '__main__':
             push_and_pull(wb_start_page, pages, quiet_output, timeout, mysql_table)
         if pages <= 100:
             parse_pages(wb_start_page, pages, quiet_output, timeout, mysql_table)
+
+        check_list = mysql_table.table_check_material()
+        while len(check_list):
+            if not quiet_output:
+                print(f"Пустых  {len(check_list)} материалов. Заполняем...")
+            for index in check_list:
+                secs = int(random.random() * int(timeout))
+                time.sleep(secs)
+                empty_math_page = html_page.HtmlPage(f"https://www.wildberries.ru/catalog/{index[1]}/detail.aspx")
+                text = empty_math_page.get_html()
+                if text:
+                    empty_soup = BeautifulSoup(text, 'html.parser')
+                    empty_bag = bag.Bag()
+                    empty_bag.set_material(empty_soup)
+                    mysql_table.table_update_material(index[0], empty_bag.material)
+                mysql_table.cnx.commit()
+            check_list = mysql_table.table_check_material()
 
     mysql_table.end_table_connect()

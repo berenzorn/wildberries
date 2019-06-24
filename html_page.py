@@ -16,8 +16,9 @@ class HtmlPage:
 
     def get_html(self):
         have_a_try = 3
+        creds = read_config()
         while have_a_try:
-            t = table.Table('proxy_list', creds=read_config())
+            t = table.Table('proxy_list', creds=creds)
             user_agent = user_agent_list.get_user_agent(int(random.random() * self.user_agent_number))
             user_agent_dict = {'user-agent': user_agent}
             table_exist = t.table_check()
@@ -25,7 +26,7 @@ class HtmlPage:
                 print("Proxy table corrupted.")
                 return False
             tab_length = t.table_len()
-            proxy = t.table_read(int(random.random() * tab_length[0]))
+            proxy = t.table_read(int(random.random() * (tab_length[0] - 1)) + 1)
             proxy_dict = {proxy[1]: proxy[2]}
             try:
                 result = requests.get(str.rstrip(self.url), headers=user_agent_dict, proxies=proxy_dict)
