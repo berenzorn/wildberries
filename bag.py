@@ -37,13 +37,14 @@ class Bag:
     def set_url(self, url):
         self.url = url.split('?')[0]
 
-    def set_material(self, soup):
+    def set_material(self, soup, debug):
         try:
             field = soup.find('p', class_='composition').text.strip()
             material = [x for x in field.split("   ")]
             self.material = material[-1].strip()
         except AttributeError:
-            print("Can't find material.")
+            if debug:
+                print("Can't find material.")
             self.material = "---"
 
     def set_price(self, soup, page):
@@ -84,7 +85,7 @@ class Bag:
         orders = re.search(r"\DordersCount\D\S\d+", page)
         self.sold = (int(orders.group(0).split(':')[1]))
 
-    def set_bag_fields(self, article, url):
+    def set_bag_fields(self, article, url, debug):
         h = HtmlPage(url)
         page = h.get_html()
         if page:
@@ -93,7 +94,7 @@ class Bag:
             self.set_name(soup)
             self.set_image(soup)
             self.set_url(url)
-            self.set_material(soup)
+            self.set_material(soup, debug)
             self.set_price(soup, page)
             self.set_price_sale(soup, page)
             self.set_rating(soup)
@@ -101,10 +102,10 @@ class Bag:
             self.set_sold(page)
         return False
 
-    def get_bag_page(self, article, url, quiet, secs):
-        self.set_bag_fields(article, url)
+    def get_bag_page(self, article, url, debug, secs):
+        self.set_bag_fields(article, url, debug)
         timeout = int(random.random() * int(secs))
-        if not quiet:
+        if debug:
             print(url)
             print(f"Таймаут {timeout} сек")
         time.sleep(timeout)
