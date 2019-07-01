@@ -47,10 +47,8 @@ def parse_pages(start_page, pages, debug, timeout, sql_table):
         for i in range(2, pages + 1):
             if "page" in start_page:
                 break
-            if "?" not in start_page:
-                page = f"{str.rstrip(start_page)}?page={str(i)}"
-            else:
-                page = f"{str.rstrip(start_page)}&page={str(i)}"
+            param = "&" if "?" in start_page else "?"
+            page = f"{str.rstrip(start_page)}{param}page={str(i)}"
             print(page)
             further_page = html_page.HtmlPage(page)
             arts_dict = further_page.get_wb_page()
@@ -67,10 +65,11 @@ def parse_pages(start_page, pages, debug, timeout, sql_table):
 
 
 def push_and_pull(start_page, pages, debug, timeout, sql_table):
-    push_page_name = str.rstrip(start_page) + "?sort=priceup"
-    parse_pages(push_page_name, pages, debug, timeout, sql_table)
-    pull_page_name = str.rstrip(start_page) + "?sort=pricedown"
-    parse_pages(pull_page_name, pages, debug, timeout, sql_table)
+    param = "&" if "?" in start_page else "?"
+    push_page_name = f"{str.rstrip(start_page)}{param}sort=priceup"
+    parse_pages(push_page_name, 100, debug, timeout, sql_table)
+    pull_page_name = f"{str.rstrip(start_page)}{param}sort=pricedown"
+    parse_pages(pull_page_name, pages - 100, debug, timeout, sql_table)
 
 
 if __name__ == '__main__':
@@ -82,7 +81,8 @@ if __name__ == '__main__':
     parser.add_argument("-c", "--clean", action="store_true", help="Очистить базу данных")
     parser.add_argument("-d", "--debug", action="store_true", help="Расширенный вывод")
     parser.add_argument("-u", "--update", action="store_true", help="Обновить базу http прокси")
-    parser.add_argument("-hs", "--https", action="store_true", help="Использовать и https прокси")
+    parser.add_argument("-s", "--https", action="store_true", help="Использовать и https прокси")
+    parser.add_argument("-m", "--material", action="store_true", help="Заполнить недостающие материалы")
     args = parser.parse_args()
 
     mysql_table = table.Table(args.database, cred_tuple)
@@ -110,7 +110,7 @@ if __name__ == '__main__':
     main_page = html_page.HtmlPage(args.source)
     main_html = main_page.get_html()
 
-    if main_html:
+    if main_html and not args.material:
         if "page" in args.source:
             parse_pages(args.source, 1, args.debug, cred_tuple[4], mysql_table)
         else:
@@ -128,22 +128,23 @@ if __name__ == '__main__':
             if pages <= 100:
                 parse_pages(args.source, pages, args.debug, cred_tuple[4], mysql_table)
 
+    check_list = mysql_table.table_check_material()
+    have_a_try = 3
+    while len(check_list) and have_a_try:
+        print(f"Пустых  {len(check_list)} материалов. Заполняем...")
+        for index in check_list:
+            secs = int(random.random() * int(cred_tuple[4]))
+            time.sleep(secs)
+            empty_math_page = html_page.HtmlPage(f"https://www.wildberries.ru/catalog/{index[1]}/detail.aspx")
+            text = empty_math_page.get_html()
+            if text:
+                empty_soup = BeautifulSoup(text, 'html.parser')
+                empty_bag = bag.Bag()
+                empty_bag.set_material(empty_soup, args.debug)
+                mysql_table.table_update_material(index[0], empty_bag.material)
+            mysql_table.cnx.commit()
         check_list = mysql_table.table_check_material()
-        while len(check_list):
-            if args.debug:
-                print(f"Пустых  {len(check_list)} материалов. Заполняем...")
-            for index in check_list:
-                secs = int(random.random() * int(cred_tuple[4]))
-                time.sleep(secs)
-                empty_math_page = html_page.HtmlPage(f"https://www.wildberries.ru/catalog/{index[1]}/detail.aspx")
-                text = empty_math_page.get_html()
-                if text:
-                    empty_soup = BeautifulSoup(text, 'html.parser')
-                    empty_bag = bag.Bag()
-                    empty_bag.set_material(empty_soup, args.debug)
-                    mysql_table.table_update_material(index[0], empty_bag.material)
-                mysql_table.cnx.commit()
-            check_list = mysql_table.table_check_material()
+        have_a_try -= 1
 
     print("Готово.")
     mysql_table.end_table_connect()
