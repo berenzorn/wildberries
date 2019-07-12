@@ -61,7 +61,7 @@ def parse_pages(start_page, pages, debug, timeout, sql_table):
                 sql_table.cnx.commit()
             else:
                 sql_table.cnx.commit()
-                print("Network error.")
+                print(f"Page {str(i)} parse error. Next page.")
 
 
 def push_and_pull(start_page, pages, debug, timeout, sql_table):
@@ -96,12 +96,13 @@ if __name__ == '__main__':
     url = f'http://hidemyna.me/ru/api/proxylist.php?code={cred_tuple[5]}&maxtime=1000&type=h&out=plain'
     urls = f'http://hidemyna.me/ru/api/proxylist.php?code={cred_tuple[5]}&maxtime=1000&type=s&out=plain'
 
-    if args.update:
+    if args.update or args.https:
         clear_table = True
         h = proxy.Proxy('http', url)
         s = proxy.Proxy('https', urls)
         len_table = h.form_table(clear_table)
         if args.https:
+            print(f"В базе {len_table} прокси.")
             clear_table = False
             time.sleep(60)
             len_table += s.form_table(clear_table)
@@ -131,7 +132,7 @@ if __name__ == '__main__':
     check_list = mysql_table.table_check_material()
     have_a_try = 3
     while len(check_list) and have_a_try:
-        print(f"Пустых  {len(check_list)} материалов. Заполняем...")
+        print(f"Пустых {len(check_list)} материалов. Заполняем...")
         for index in check_list:
             secs = int(random.random() * int(cred_tuple[4]))
             time.sleep(secs)

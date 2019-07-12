@@ -54,7 +54,10 @@ class Bag:
             self.price = (int(price))
         except AttributeError:
             price = re.search(r"\Dprice\D\S\d+", page)
-            self.price = (int(price.group(0).split(':')[1]))
+            try:
+                self.price = (int(price.group(0).split(':')[1]))
+            except IndexError:
+                self.price = 0
 
     def set_price_sale(self, soup, page):
         try:
@@ -67,7 +70,10 @@ class Bag:
                 self.price_sale = price_sale
             except TypeError:
                 price_sale = re.search(r"\DpriceWithSale\D\S\d+", page)
-                self.price_sale = (int(price_sale.group(0).split(':')[1]))
+                try:
+                    self.price_sale = (int(price_sale.group(0).split(':')[1]))
+                except IndexError:
+                    self.price_sale = 0
 
     def set_rating(self, soup):
         try:
@@ -83,7 +89,10 @@ class Bag:
 
     def set_sold(self, page):
         orders = re.search(r"\DordersCount\D\S\d+", page)
-        self.sold = (int(orders.group(0).split(':')[1]))
+        try:
+            self.sold = (int(orders.group(0).split(':')[1]))
+        except IndexError:
+            self.sold = 0
 
     def set_bag_fields(self, article, url, debug):
         h = HtmlPage(url)
@@ -104,7 +113,7 @@ class Bag:
 
     def get_bag_page(self, article, url, debug, secs):
         self.set_bag_fields(article, url, debug)
-        timeout = int(random.random() * int(secs))
+        timeout = round(random.random() * int(secs), 1)
         if debug:
             print(url)
             print(f"Таймаут {timeout} сек")
