@@ -30,7 +30,7 @@ class HtmlPage:
                 proxy = t.table_read(int(random.random() * (tab_length[0] - 1)) + 1)
                 proxy_dict = {proxy[1]: proxy[2]}
             except TypeError:
-                print("Fatal error. Smth bad in proxy list.")
+                print("Fatal error in proxy list.")
                 return False
             try:
                 result = requests.get(str.rstrip(self.url), headers=user_agent_dict, proxies=proxy_dict)

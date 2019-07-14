@@ -6,6 +6,7 @@ import proxy
 import random
 import argparse
 import html_page
+from math import ceil
 from bs4 import BeautifulSoup
 from configparser import ConfigParser
 
@@ -118,9 +119,7 @@ if __name__ == '__main__':
             main_soup = BeautifulSoup(main_html, 'html.parser')
             items = main_soup.find('span', class_="total many").find('span').text
             print(f"{items} товаров")
-            pages = int(int(items) / 100)
-            if int(items) % 100 != 0:
-                pages += 1
+            pages = ceil(int(items) / 100)
             if pages > 200:
                 pages = 200
             print(f"{str(pages)} страниц")
