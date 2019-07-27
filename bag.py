@@ -94,9 +94,9 @@ class Bag:
         except IndexError:
             self.sold = 0
 
-    def set_bag_fields(self, article, url, debug):
+    def set_bag_fields(self, article, url, debug, creds, proxy_pass):
         h = HtmlPage(url)
-        page = h.get_html()
+        page = h.get_html(creds, proxy_pass)
         if page:
             soup = BeautifulSoup(page, 'html.parser')
             self.set_article(article)
@@ -111,9 +111,9 @@ class Bag:
             self.set_sold(page)
         return False
 
-    def get_bag_page(self, article, url, debug, secs):
-        self.set_bag_fields(article, url, debug)
-        timeout = round(random.random() * int(secs), 1)
+    def get_bag_page(self, article, url, debug, creds, proxy_pass):
+        self.set_bag_fields(article, url, debug, creds, proxy_pass)
+        timeout = round(random.random() * int(creds[4]), 1)
         if debug:
             print(url)
             print(f"Таймаут {timeout} сек")

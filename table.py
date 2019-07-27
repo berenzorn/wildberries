@@ -70,13 +70,13 @@ class Table:
             f"'{bag.price}', '{bag.price_sale}', '{bag.rating}', '{bag.reviews}', '{bag.sold}', '{int(time.time())}');"
         self.table_execute(insert)
 
-    def table_check_presence(self, article):
+    def table_check_presence(self, article, expiry_hours):
         select_article = f"SELECT timestamp FROM {self.name} WHERE article = {article};"
         self.cursor.execute(select_article)
         article_list = self.cursor.fetchall()
         time_now = int(time.time())
         for stamp in article_list:
-            if time_now - stamp[0] < 86400:
+            if time_now - stamp[0] < (3600 * int(expiry_hours)):
                 return True
         return False
 

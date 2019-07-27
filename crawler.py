@@ -18,15 +18,17 @@ def read_config():
     mysql_pass = config.get('mysql', 'mysql_pass')
     mysql_host = config.get('mysql', 'mysql_host')
     mysql_base = config.get('mysql', 'mysql_base')
+    expiry_hours = config.get('params', 'expiry_hours')
     time_secs = config.get('params', 'timeout_between_urls')
     proxy_list_keys = config.get('params', 'proxy_list_key')
-    return mysql_user, mysql_pass, mysql_host, mysql_base, time_secs, proxy_list_keys
+    #      0           1           2           3           4          5                6
+    return mysql_user, mysql_pass, mysql_host, mysql_base, time_secs, proxy_list_keys, expiry_hours
 
 
-def parse_pages(start_page, pages, debug, timeout, sql_table):
+def parse_pages(start_page, pages, debug, sql_table, creds, proxy_pass):
 
     first_page = html_page.HtmlPage(start_page)
-    html = first_page.get_html()
+    html = first_page.get_html(creds, proxy_pass)
 
     if html:
         soup = BeautifulSoup(html, 'html.parser')
@@ -38,9 +40,9 @@ def parse_pages(start_page, pages, debug, timeout, sql_table):
             art_num = re.search(r'\d+', i.get('data-catalogercod1s'))
             arts_dict[art_num[0]] = i.find('a')['href']
         for art, url in arts_dict.items():
-                if not sql_table.table_check_presence(art):
+                if not sql_table.table_check_presence(art, creds[6]):
                     handbag = bag.Bag()
-                    handbag.get_bag_page(art, url, debug, timeout)
+                    handbag.get_bag_page(art, url, debug, creds, proxy_pass)
                     sql_table.table_append(handbag)
         sql_table.cnx.commit()
 
@@ -51,26 +53,33 @@ def parse_pages(start_page, pages, debug, timeout, sql_table):
             param = "&" if "?" in start_page else "?"
             page = f"{str.rstrip(start_page)}{param}page={str(i)}"
             print(page)
-            further_page = html_page.HtmlPage(page)
-            arts_dict = further_page.get_wb_page()
-            if arts_dict:
-                for art, url in arts_dict.items():
-                    if not sql_table.table_check_presence(art):
-                        handbag = bag.Bag()
-                        handbag.get_bag_page(art, url, debug, timeout)
-                        sql_table.table_append(handbag)
-                sql_table.cnx.commit()
+            have_a_try = 3
+            if have_a_try:
+                further_page = html_page.HtmlPage(page)
+                arts_dict = further_page.get_wb_page(creds, proxy_pass)
+                if arts_dict:
+                    for art, url in arts_dict.items():
+                        if not sql_table.table_check_presence(art, creds[6]):
+                            handbag = bag.Bag()
+                            handbag.get_bag_page(art, url, debug, creds, proxy_pass)
+                            sql_table.table_append(handbag)
+                    sql_table.cnx.commit()
+                    continue
+                else:
+                    sql_table.cnx.commit()
+                    print(f"Page {str(i)} parse error. Trying again.")
+                    have_a_try -= 1
             else:
                 sql_table.cnx.commit()
-                print(f"Page {str(i)} parse error. Next page.")
+                print(f"No luck. Next page.")
 
 
-def push_and_pull(start_page, pages, debug, timeout, sql_table):
+def push_and_pull(start_page, pages, debug, sql_table, creds, proxy_pass):
     param = "&" if "?" in start_page else "?"
     push_page_name = f"{str.rstrip(start_page)}{param}sort=priceup"
-    parse_pages(push_page_name, 100, debug, timeout, sql_table)
+    parse_pages(push_page_name, 100, debug, sql_table, creds, proxy_pass)
     pull_page_name = f"{str.rstrip(start_page)}{param}sort=pricedown"
-    parse_pages(pull_page_name, pages - 100, debug, timeout, sql_table)
+    parse_pages(pull_page_name, pages - 100, debug, sql_table, creds, proxy_pass)
 
 
 if __name__ == '__main__':
@@ -83,6 +92,7 @@ if __name__ == '__main__':
     parser.add_argument("-d", "--debug", action="store_true", help="Расширенный вывод")
     parser.add_argument("-u", "--update", action="store_true", help="Обновить базу http прокси")
     parser.add_argument("-s", "--https", action="store_true", help="Использовать и https прокси")
+    parser.add_argument("-n", "--no-proxy", dest="noproxy", action="store_true", help="Не использовать прокси")
     parser.add_argument("-m", "--material", action="store_true", help="Заполнить недостающие материалы")
     args = parser.parse_args()
 
@@ -110,23 +120,27 @@ if __name__ == '__main__':
         print(f"В базе {len_table} прокси.")
 
     main_page = html_page.HtmlPage(args.source)
-    main_html = main_page.get_html()
+    main_html = main_page.get_html(cred_tuple, args.noproxy)
 
     if main_html and not args.material:
         if "page" in args.source:
-            parse_pages(args.source, 1, args.debug, cred_tuple[4], mysql_table)
+            parse_pages(args.source, 1, args.debug, mysql_table, cred_tuple, args.noproxy)
         else:
             main_soup = BeautifulSoup(main_html, 'html.parser')
-            items = main_soup.find('span', class_="total many").find('span').text
+            try:
+                items = main_soup.find('span', class_="total many").find('span').text
+            except AttributeError:
+                print("Bad first page. Try to run again.")
+                raise Exception
             print(f"{items} товаров")
             pages = ceil(int(items) / 100)
             if pages > 200:
                 pages = 200
             print(f"{str(pages)} страниц")
             if 100 < pages <= 200:
-                push_and_pull(args.source, pages, args.debug, cred_tuple[4], mysql_table)
+                push_and_pull(args.source, pages, args.debug, mysql_table, cred_tuple, args.noproxy)
             if pages <= 100:
-                parse_pages(args.source, pages, args.debug, cred_tuple[4], mysql_table)
+                parse_pages(args.source, pages, args.debug, mysql_table, cred_tuple, args.noproxy)
 
     check_list = mysql_table.table_check_material()
     have_a_try = 3
@@ -136,7 +150,7 @@ if __name__ == '__main__':
             secs = int(random.random() * int(cred_tuple[4]))
             time.sleep(secs)
             empty_math_page = html_page.HtmlPage(f"https://www.wildberries.ru/catalog/{index[1]}/detail.aspx")
-            text = empty_math_page.get_html()
+            text = empty_math_page.get_html(cred_tuple, args.noproxy)
             if text:
                 empty_soup = BeautifulSoup(text, 'html.parser')
                 empty_bag = bag.Bag()
