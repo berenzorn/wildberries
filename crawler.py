@@ -36,7 +36,7 @@ def parse_pages(start_page, pages, debug, sql_table, creds, proxy_pass):
         # 1st page
         arts_dict = {}
         print(start_page)
-        for i in soup.findAll('div', class_="dtList i-dtList"):
+        for i in soup.findAll('div', class_="dtList i-dtList j-card-item"):
             art_num = re.search(r'\d+', i.get('data-catalogercod1s'))
             arts_dict[art_num[0]] = i.find('a')['href']
         for art, url in arts_dict.items():
