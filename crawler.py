@@ -123,13 +123,13 @@ if __name__ == '__main__':
             len_table += s.form_table(clear_table)
         print(f"В базе {len_table} прокси.")
 
-    url = url.Url(args.source)
-    main_page = html_page.HtmlPage(url.get_url())
+    link = url.Url(args.source)
+    main_page = html_page.HtmlPage(link.get_url())
     main_html = main_page.get_html(cred_tuple, args.noproxy)
 
     if main_html and not args.material:
-        if url.check_key('page'):
-            parse_pages(url.get_url(), 1, args.debug, mysql_table, cred_tuple, args.noproxy)
+        if link.check_key('page'):
+            parse_pages(link.get_url(), 1, args.debug, mysql_table, cred_tuple, args.noproxy)
         else:
             main_soup = BeautifulSoup(main_html, 'html.parser')
             try:
@@ -143,9 +143,9 @@ if __name__ == '__main__':
                 pages = 200
             print(f"{str(pages)} страниц")
             if 100 < pages <= 200:
-                push_and_pull(url.get_url(), pages, args.debug, mysql_table, cred_tuple, args.noproxy)
+                push_and_pull(link.get_url(), pages, args.debug, mysql_table, cred_tuple, args.noproxy)
             if pages <= 100:
-                parse_pages(url.get_url(), pages, args.debug, mysql_table, cred_tuple, args.noproxy)
+                parse_pages(link.get_url(), pages, args.debug, mysql_table, cred_tuple, args.noproxy)
 
     check_list = mysql_table.table_check_material()
     have_a_try = 3
