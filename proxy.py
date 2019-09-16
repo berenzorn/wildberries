@@ -1,5 +1,5 @@
 import random
-from table import Table
+import table
 import requests
 import crawler
 
@@ -19,7 +19,7 @@ class Proxy:
             return False
 
     def form_table(self, clear):
-        t = Table('proxy_list', crawler.read_config())
+        t = table.Table('proxy_list', crawler.read_config())
         t.table_check()
         if clear:
             t.table_truncate()
@@ -36,6 +36,6 @@ class Proxy:
 
     @staticmethod
     def read_table_string(list_len):
-        tbl = Table('proxy_list', crawler.read_config())
+        tbl = table.Table('proxy_list', crawler.read_config())
         number = int(random.random() * list_len)
         return tbl.table_read(number)

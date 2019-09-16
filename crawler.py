@@ -2,6 +2,7 @@ import re
 import time
 import bag
 import url
+import sys
 import table
 import proxy
 import random
@@ -43,17 +44,16 @@ def parse_pages(start_page, pages, debug, sql_table, creds, proxy_pass):
             art_num = re.search(r'\d+', i.get('data-catalogercod1s'))
             arts_dict[art_num[0]] = i.find('a')['href']
         for art, url in arts_dict.items():
-                if not sql_table.table_check_presence(art, creds[6]):
-                    handbag = bag.Bag()
-                    handbag.get_bag_page(art, url, debug, creds, proxy_pass)
-                    sql_table.table_append(handbag)
+            if not sql_table.table_check_presence(art, creds[6]):
+                handbag = bag.Bag()
+                handbag.get_bag_page(art, url, debug, creds, proxy_pass)
+                sql_table.table_append(handbag)
         sql_table.cnx.commit()
 
         # after 1st page
         if parse_page.check_key('page'):
             return 0
-        else:
-            parse_page.add_key('page', '1')
+        parse_page.add_key('page', '1')
 
         # 2nd page and further
         for i in range(2, pages + 1):
@@ -136,16 +136,14 @@ if __name__ == '__main__':
                 items = main_soup.find('span', class_="total many").find('span').text
             except AttributeError:
                 print("Bad first page. Try to run again.")
-                raise Exception
+                sys.exit(0)
             print(f"{items} товаров")
             pages = ceil(int(items) / 100)
             if pages > 200:
                 pages = 200
             print(f"{str(pages)} страниц")
-            if 100 < pages <= 200:
-                push_and_pull(link.get_url(), pages, args.debug, mysql_table, cred_tuple, args.noproxy)
-            if pages <= 100:
-                parse_pages(link.get_url(), pages, args.debug, mysql_table, cred_tuple, args.noproxy)
+            ((push_and_pull if pages > 100 else parse_pages)
+             (link.get_url(), pages, args.debug, mysql_table, cred_tuple, args.noproxy))
 
     check_list = mysql_table.table_check_material()
     have_a_try = 3

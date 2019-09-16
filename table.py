@@ -36,8 +36,8 @@ class Table:
         self.cnx.close()
 
     def proxy_make(self):
-        create = f"CREATE TABLE proxy_list (id INT NOT NULL AUTO_INCREMENT," \
-                 f" protocol VARCHAR(32), address VARCHAR(64), PRIMARY KEY (id));"
+        create = (f"CREATE TABLE proxy_list (id INT NOT NULL AUTO_INCREMENT, "
+                  f"protocol VARCHAR(32), address VARCHAR(64), PRIMARY KEY (id));")
         self.table_execute(create)
 
     def proxy_append(self, proto, addr):
@@ -59,15 +59,16 @@ class Table:
         self.table_execute(truncate)
 
     def table_make(self):
-        create = f"CREATE TABLE {self.name} (id INT NOT NULL AUTO_INCREMENT, article INT, name VARCHAR(128)," \
-            f" image VARCHAR(256), url VARCHAR(256), material VARCHAR(128), price INT,  price_sale INT," \
-            f" rating INT, review INT, sold INT, timestamp INT, PRIMARY KEY(id));"
+        create = (f"CREATE TABLE {self.name} (id INT NOT NULL AUTO_INCREMENT, article INT, name VARCHAR(128), "
+                  f"image VARCHAR(256), url VARCHAR(256), material VARCHAR(128), price INT, price_sale INT, "
+                  f"rating INT, review INT, sold INT, timestamp INT, PRIMARY KEY(id));")
         self.table_execute(create)
 
     def table_append(self, bag: bag):
-        insert = f"INSERT into {self.name} (article, name, image, url, material, price, price_sale, rating, review, " \
-            f"sold, timestamp) VALUES ('{bag.article}', '{bag.name}', '{bag.image}', '{bag.url}', '{bag.material}', " \
-            f"'{bag.price}', '{bag.price_sale}', '{bag.rating}', '{bag.reviews}', '{bag.sold}', '{int(time.time())}');"
+        insert = (f"INSERT into {self.name} (article, name, image, url, material, price, price_sale, rating, "
+                  f"review, sold, timestamp) VALUES ('{bag.article}', '{bag.name}', '{bag.image}', '{bag.url}', "
+                  f"'{bag.material}', '{bag.price}', '{bag.price_sale}', '{bag.rating}', '{bag.reviews}', "
+                  f"'{bag.sold}', '{int(time.time())}');")
         self.table_execute(insert)
 
     def table_check_presence(self, article, expiry_hours):

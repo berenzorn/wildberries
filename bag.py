@@ -1,7 +1,7 @@
 import re
 import time
 import random
-from html_page import HtmlPage
+import html_page
 from bs4 import BeautifulSoup
 
 
@@ -95,7 +95,7 @@ class Bag:
             self.sold = 0
 
     def set_bag_fields(self, article, url, debug, creds, proxy_pass):
-        h = HtmlPage(url)
+        h = html_page.HtmlPage(url)
         page = h.get_html(creds, proxy_pass)
         if page:
             soup = BeautifulSoup(page, 'html.parser')
