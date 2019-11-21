@@ -20,9 +20,12 @@ class Proxy:
 
     def form_table(self, clear):
         t = table.Table('proxy_list', crawler.read_config())
-        t.table_check()
-        if clear:
-            t.table_truncate()
+        proxy_exist = t.table_check()
+        if proxy_exist:
+            if clear:
+                t.table_truncate()
+        else:
+            t.table_make()
 
         http_list = self.proxy_download().split('\r')
         if http_list:
