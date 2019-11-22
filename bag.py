@@ -39,7 +39,7 @@ class Bag:
 
     def set_material(self, soup, debug):
         try:
-            field = soup.find('p', class_='composition').text.strip()
+            field = soup.find('span', class_='j-composition collapsable-content').text.strip()
             material = [x for x in field.split("   ")]
             self.material = material[-1].strip()
         except AttributeError:
