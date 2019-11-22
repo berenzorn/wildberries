@@ -27,7 +27,11 @@ class Proxy:
         else:
             t.table_make()
 
-        http_list = self.proxy_download().split('\r')
+        try:
+            http_list = self.proxy_download().split('\r')
+        except AttributeError:
+            print("Network error. Can't get proxies.")
+            return False
         if http_list:
             table_list = [f'{self.proto}://{str.lstrip(i)}' for i in http_list]
             table_list.pop()
