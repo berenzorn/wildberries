@@ -44,7 +44,11 @@ On the next screen all you need are MySQL Server, MySQL Workbench, MySQL Notifie
 
 ## Usage
 
-First of all you need for real work with this script is a whole bunch of proxy servers or you'll get ban for an hour or so from www.wildberries.ru after showing 100 positions in a short time. Script is designed for work with the premium account on www.hidemyname.org, it will cost $8 for a month. After payment you must send the feedback form on a page https://hidemyname.org/en/feedback/ with request for API access. Once you'll get an e-mail with some keys and options, you're ready.
+First of all you need for real work with this script is a whole bunch of proxy servers or you'll get ban for an hour or so from www.wildberries.ru after showing 100 positions in a short time. Script is designed for work with the premium account on www.hidemyname.org, it will cost $8 for a month. After payment you must send the feedback form on a page https://hidemyname.org/en/feedback/ with request for API access. You'll get an e-mail with some keys and options.
+
+Now you need to initialize API. It's one time procedure for every key. Go to http://hidemyna.me/ru/proxy-list/
+
+There will be a form where you must click on **IP:port** link below. Next you'll see a small window with just one field and button. Copy-paste your key to this field and click "Login". If you see the list with some IP addresses, you're ready to work, no need to copy them.   
 
 Next you need to edit **config.ini** file. It has less than ten lines:
 ```
@@ -85,19 +89,19 @@ Optional arguments:
 First time you start this crawler in a day, you must use **-u** or **-s** argument, because the proxies are changing constantly.
 Example:
 ```
-python crawler.py -u backpacks "https://www.wildberries.ru/catalog/aksessuary/sumki-i-ryukzaki/ryukzaki/ryukzaki"
+python crawler.py -u backpacks https://www.wildberries.ru/catalog/aksessuary/sumki-i-ryukzaki/ryukzaki/ryukzaki
 ```
-When you see that some section has more than 20000 positions, you must specify your request or many positions in the middle will stay unnoticed. You can split it into two queries or more.
+When you see that some section has more than 20000 positions, you must specify your request or many positions in the middle will stay unnoticed. You can split it into two queries or more. Now you need the quotes before and after URL.
 Example:
 ```
-python crawler.py backpacks https://www.wildberries.ru/catalog/aksessuary/sumki-i-ryukzaki/ryukzaki/ryukzaki?price=200;2000
-python crawler.py backpacks https://www.wildberries.ru/catalog/aksessuary/sumki-i-ryukzaki/ryukzaki/ryukzaki?price=2000;20000
+python crawler.py backpacks "https://www.wildberries.ru/catalog/aksessuary/sumki-i-ryukzaki/ryukzaki/ryukzaki?price=200;2000"
+python crawler.py backpacks "https://www.wildberries.ru/catalog/aksessuary/sumki-i-ryukzaki/ryukzaki/ryukzaki?price=2000;20000"
 ```
 Here I splitted backpack section to *"cheaper than 2000rub"* and *"from 2000rub to 20000rub"*.
 You can split and specify these sections using three or even more categories.
 Example:
 ```
-python crawler.py backpacks https://www.wildberries.ru/catalog/aksessuary/sumki-i-ryukzaki/ryukzaki/ryukzaki?price=3000;10000&color=0&kind=1&consists=6
+python crawler.py backpacks "https://www.wildberries.ru/catalog/aksessuary/sumki-i-ryukzaki/ryukzaki/ryukzaki?price=3000;10000&color=0&kind=1&consists=6"
 ```
 if you need only *black* *polyester* backpacks *for men* with *the price from 3000rub to 10000rub*.
 And so on.
