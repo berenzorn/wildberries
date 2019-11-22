@@ -25,7 +25,7 @@ class Proxy:
             if clear:
                 t.table_truncate()
         else:
-            t.table_make()
+            t.proxy_make()
 
         try:
             http_list = self.proxy_download().split('\r')
