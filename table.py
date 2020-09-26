@@ -65,6 +65,8 @@ class Table:
         self.table_execute(create)
 
     def table_append(self, bag: bag):
+        if any("'" for _ in bag.name):
+            bag.name = bag.name.replace("'", "''")
         insert = (f"INSERT into {self.name} (article, name, image, url, material, price, price_sale, rating, "
                   f"review, sold, timestamp) VALUES ('{bag.article}', '{bag.name}', '{bag.image}', '{bag.url}', "
                   f"'{bag.material}', '{bag.price}', '{bag.price_sale}', '{bag.rating}', '{bag.reviews}', "
