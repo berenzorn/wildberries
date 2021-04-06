@@ -25,7 +25,7 @@ class Bag:
 
     def set_name(self, soup):
         field = soup.find('meta', itemprop="name")['content']
-        name = re.findall(r'[А-Яа-яA-Za-z]+', field)
+        name = re.findall(r'[А-Яа-яA-Za-z0-9]+', field)
         self.name = " ".join(name)
 
     def set_image(self, soup):
@@ -43,8 +43,8 @@ class Bag:
             material = [x for x in field.split("   ")]
             self.material = material[-1].strip()
         except AttributeError:
-            if debug:
-                print("Can't find material.")
+            # if debug:
+            #     print("Can't find material.")
             self.material = "---"
 
     def set_price(self, soup, page):
