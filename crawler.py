@@ -8,6 +8,7 @@ import proxy
 import random
 import argparse
 import html_page
+import pandas as pd
 from math import ceil
 from bs4 import BeautifulSoup
 from configparser import ConfigParser
@@ -92,6 +93,7 @@ def push_and_pull(start_page, pages, debug, sql_table, creds, proxy_pass):
 if __name__ == '__main__':
     cred_tuple = read_config()
     parser = argparse.ArgumentParser()
+    group = parser.add_mutually_exclusive_group()
     parser.add_argument("database", help="База данных для заполнения")
     parser.add_argument("source", type=str, help="URL страницы, откуда начинать")
     parser.add_argument("-c", "--clean", action="store_true", help="Очистить базу данных")
@@ -100,6 +102,8 @@ if __name__ == '__main__':
     parser.add_argument("-s", "--https", action="store_true", help="Использовать и https прокси")
     parser.add_argument("-n", "--no-proxy", dest="noproxy", action="store_true", help="Не использовать прокси")
     parser.add_argument("-m", "--material", action="store_true", help="Заполнять материалы")
+    group.add_argument("-ei", type=str, dest="incexp", metavar="FILE", help="Экспортировать изменения")
+    group.add_argument("-ea", type=str, dest="allexp", metavar="FILE", help="Экспортировать всю базу")
     args = parser.parse_args()
     http_url = f'http://hidemyna.me/ru/api/proxylist.php?code={cred_tuple[5]}&maxtime=1000&type=h&out=plain'
     https_url = f'http://hidemyna.me/ru/api/proxylist.php?code={cred_tuple[5]}&maxtime=1000&type=s&out=plain'
@@ -167,5 +171,24 @@ if __name__ == '__main__':
                 check_list = mysql_table.table_check_material()
                 have_a_try -= 1
 
+        if args.incexp:
+            if '.' not in args.incexp or not str(args.incexp).endswith("xlsx"):
+                args.incexp += ".xlsx"
+            export_array = mysql_table.table_export_last(cred_tuple[6])
+            df = pd.DataFrame(export_array,
+                              columns=['Название', 'Фото', 'URL', 'Цена', 'Цена по акции',
+                                       'Рейтинг', 'Отзывов', 'Продано'])
+            df.to_excel(args.incexp)
+
+        if args.allexp:
+            if '.' not in args.allexp or not str(args.allexp).endswith("xlsx"):
+                args.allexp += ".xlsx"
+            export_array = mysql_table.table_export_all()
+            df = pd.DataFrame(export_array,
+                              columns=['Название', 'Фото', 'URL', 'Цена', 'Цена по акции',
+                                       'Рейтинг', 'Отзывов', 'Продано'])
+            df.to_excel(args.allexp)
+
         print("Готово.")
+
     mysql_table.end_table_connect()

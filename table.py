@@ -93,3 +93,14 @@ class Table:
         update = f"UPDATE {self.name} SET material = '{math}' WHERE (id = {id});"
         self.cursor.execute(update)
 
+    def table_export_last(self, expiry_hours):
+        time_from = int(time.time()) - (3600 * expiry_hours)
+        select_set = (f"SELECT name, image, url, price, price_sale, rating, review, "
+                      f"sold FROM {self.name} WHERE timestamp > {time_from};")
+        self.cursor.execute(select_set)
+        return self.cursor.fetchall()
+
+    def table_export_all(self):
+        select_set = f"SELECT name, image, url, price, price_sale, rating, review, sold FROM {self.name};"
+        self.cursor.execute(select_set)
+        return self.cursor.fetchall()
