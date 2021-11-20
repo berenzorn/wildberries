@@ -66,10 +66,12 @@ def parse_pages(start_page, pages, debug, sql_table, creds, proxy_pass):
                 further_page = html_page.HtmlPage(parse_page.get_url())
                 arts_dict = further_page.get_wb_page(creds, proxy_pass)
                 if arts_dict:
-                    for art, url in arts_dict.items():
+                    for art, link in arts_dict.items():
                         if not sql_table.table_check_presence(art, creds[6]):
                             handbag = bag.Bag()
-                            handbag.get_bag_page(art, url, debug, creds, proxy_pass)
+                            if not link.startswith('https'):
+                                link = "https://www.wildberries.ru" + link
+                            handbag.get_bag_page(art, link, debug, creds, proxy_pass)
                             sql_table.table_append(handbag)
                     sql_table.cnx.commit()
                     continue
@@ -88,6 +90,11 @@ def push_and_pull(start_page, pages, debug, sql_table, creds, proxy_pass):
     parse_pages(pnp_start.get_url(), 100, debug, sql_table, creds, proxy_pass)
     pnp_start.change_key('sort', 'pricedown')
     parse_pages(pnp_start.get_url(), pages - 100, debug, sql_table, creds, proxy_pass)
+
+
+def cut_thousands(number):
+    parsed = number[:-4] + number[-3:]
+    return parsed
 
 
 if __name__ == '__main__':
@@ -139,11 +146,12 @@ if __name__ == '__main__':
             main_soup = BeautifulSoup(main_html, 'html.parser')
             try:
                 items = main_soup.find(
-                    'span', class_="goods-count j-goods-count").text.strip().split(' ')[0]
+                    'span', class_="goods-count").text.strip().split(' ')[0]
             except AttributeError:
                 print("Bad first page. Try to run again.")
                 sys.exit(0)
             print(f"{items} товаров")
+            items = cut_thousands(items)
             pages = ceil(int(items) / 100)
             if pages > 200:
                 pages = 200

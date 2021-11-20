@@ -55,8 +55,8 @@ class HtmlPage:
         if html:
             soup = BeautifulSoup(html, 'html.parser')
             articles = {}
-            for index in soup.findAll('div', class_="dtList i-dtList j-card-item"):
-                article_number = re.search(r'\d+', index.get('data-catalogercod1s'))
+            for index in soup.findAll('div', class_="product-card j-card-item"):
+                article_number = re.search(r'\d+', index.get('data-popup-nm-id'))
                 articles[article_number[0]] = index.find('a')['href']
             return articles
         return False

@@ -20,7 +20,7 @@ class Table:
 
     def table_check(self):
         try:
-            execute = f"SELECT * FROM {self.name};"
+            execute = f"SELECT * FROM `{self.name}`;"
             self.table_execute(execute)
             return True
         except mysql.connector.errors.ProgrammingError:
@@ -45,21 +45,21 @@ class Table:
         self.table_execute(insert)
 
     def table_read(self, number):
-        read = f"SELECT * FROM {self.name} WHERE id = {number};"
+        read = f"SELECT * FROM `{self.name}` WHERE id = {number};"
         self.cursor.execute(read)
         return self.cursor.fetchone()
 
     def table_len(self):
-        length = f"SELECT COUNT(*) FROM {self.name}"
+        length = f"SELECT COUNT(*) FROM `{self.name}`"
         self.cursor.execute(length)
         return self.cursor.fetchone()
 
     def table_truncate(self):
-        truncate = f"TRUNCATE TABLE {self.name};"
+        truncate = f"TRUNCATE TABLE `{self.name}`;"
         self.table_execute(truncate)
 
     def table_make(self):
-        create = (f"CREATE TABLE {self.name} (id INT NOT NULL AUTO_INCREMENT, article INT, name VARCHAR(128), "
+        create = (f"CREATE TABLE `{self.name}` (id INT NOT NULL AUTO_INCREMENT, article INT, name VARCHAR(128), "
                   f"image VARCHAR(256), url VARCHAR(256), material VARCHAR(128), price INT, price_sale INT, "
                   f"rating INT, review INT, sold INT, timestamp INT, PRIMARY KEY(id));")
         self.table_execute(create)
@@ -67,14 +67,14 @@ class Table:
     def table_append(self, bag: bag):
         if any("'" for _ in bag.name):
             bag.name = bag.name.replace("'", "''")
-        insert = (f"INSERT into {self.name} (article, name, image, url, material, price, price_sale, rating, "
+        insert = (f"INSERT into `{self.name}` (article, name, image, url, material, price, price_sale, rating, "
                   f"review, sold, timestamp) VALUES ('{bag.article}', '{bag.name}', '{bag.image}', '{bag.url}', "
                   f"'{bag.material}', '{bag.price}', '{bag.price_sale}', '{bag.rating}', '{bag.reviews}', "
                   f"'{bag.sold}', '{int(time.time())}');")
         self.table_execute(insert)
 
     def table_check_presence(self, article, expiry_hours):
-        select_article = f"SELECT timestamp FROM {self.name} WHERE article = {article};"
+        select_article = f"SELECT timestamp FROM `{self.name}` WHERE article = {article};"
         self.cursor.execute(select_article)
         article_list = self.cursor.fetchall()
         time_now = int(time.time())
@@ -84,23 +84,23 @@ class Table:
         return False
 
     def table_check_material(self):
-        select = f"SELECT id, article FROM {self.name} where material = '---';"
+        select = f"SELECT id, article FROM `{self.name}` where material = '---';"
         self.cursor.execute(select)
         empty_list = self.cursor.fetchall()
         return empty_list
 
     def table_update_material(self, id, math):
-        update = f"UPDATE {self.name} SET material = '{math}' WHERE (id = {id});"
+        update = f"UPDATE `{self.name}` SET material = '{math}' WHERE (id = {id});"
         self.cursor.execute(update)
 
     def table_export_last(self, expiry_hours):
         time_from = int(time.time()) - (3600 * expiry_hours)
         select_set = (f"SELECT name, image, url, price, price_sale, rating, review, "
-                      f"sold FROM {self.name} WHERE timestamp > {time_from};")
+                      f"sold FROM `{self.name}` WHERE timestamp > {time_from};")
         self.cursor.execute(select_set)
         return self.cursor.fetchall()
 
     def table_export_all(self):
-        select_set = f"SELECT name, image, url, price, price_sale, rating, review, sold FROM {self.name};"
+        select_set = f"SELECT name, image, url, price, price_sale, rating, review, sold FROM `{self.name}`;"
         self.cursor.execute(select_set)
         return self.cursor.fetchall()
