@@ -59,7 +59,7 @@ class Table:
         self.table_execute(truncate)
 
     def table_make(self):
-        create = (f"CREATE TABLE `{self.name}` (id INT NOT NULL AUTO_INCREMENT, article INT, name VARCHAR(128), "
+        create = (f"CREATE TABLE `{self.name}` (id INT NOT NULL AUTO_INCREMENT, article INT, name VARCHAR(256), "
                   f"image VARCHAR(256), url VARCHAR(256), material VARCHAR(128), price INT, price_sale INT, "
                   f"rating INT, review INT, sold INT, timestamp INT, PRIMARY KEY(id));")
         self.table_execute(create)
