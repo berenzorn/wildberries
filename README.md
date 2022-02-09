@@ -5,7 +5,7 @@ The script is designed to parse various sections of the www.wildberries.ru marke
 ## Requirements
 
 * python 3.6+
-* mysql server 5.7+
+* mysql server
 
 How to get it on Ubuntu 18.04+:
 
@@ -16,6 +16,8 @@ How to get it on Ubuntu 18.04+:
 	```
 2. Install requests module and Python connector to MySQL:
 	```
+	@ pip3 install bs4
+	@ pip3 install pandas
 	@ pip3 install requests
 	@ pip3 install python-mysql-connector
 	```
@@ -28,18 +30,20 @@ How to get it on Ubuntu 18.04+:
 
 How to get it on Windows:
 
-1. You need MySQL 5.7.xx community server, if you still don't have it:
-https://dev.mysql.com/get/Downloads/MySQLInstaller/mysql-installer-community-5.7.28.0.msi
+1. You need MySQL community server, if you still don't have it:
+https://dev.mysql.com/downloads/windows/installer/8.0.html
 
 When you'll see "Choosing a setup type", click "Custom" type and click Next.
-On the next screen all you need are MySQL Server, MySQL Workbench, MySQL Notifier and Connector/Python.
+On the next screen all you need are MySQL Server, MySQL Workbench and Connector/Python.
 
 2. Run MySQL Workbench and choose SYS as the default database.
 
 3. Install requests module and Python connector to MySQL:
 	```
+	@ pip install bs4
+	@ pip install pandas
 	@ pip install requests
-	@ pip install mysql.connector
+	@ pip install mysql-connector-python
 	```
 
 ## Usage
